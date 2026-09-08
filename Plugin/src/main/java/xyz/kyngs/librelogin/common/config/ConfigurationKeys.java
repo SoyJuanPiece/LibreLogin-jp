@@ -126,6 +126,26 @@ public class ConfigurationKeys {
             ConfigurateHelper::getBoolean
     );
 
+    public static final ConfigurationKey<Boolean> BACKEND_LOCKDOWN_ENABLED = new ConfigurationKey<>(
+            "backend-lockdown-enabled",
+            true,
+            """
+                    !!!THIS ONLY AFFECTS PAPER!!!
+                    Whether backend players should be blocked from moving and interacting until they are authenticated.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
+    public static final ConfigurationKey<Boolean> BACKEND_BLINDNESS_EFFECT = new ConfigurationKey<>(
+            "backend-blindness-effect",
+            true,
+            """
+                    !!!THIS ONLY AFFECTS PAPER!!!
+                    Whether backend players should receive a blindness effect while awaiting authentication.
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+
     public static final ConfigurationKey<String> NEW_UUID_CREATOR = new ConfigurationKey<>(
             "new-uuid-creator",
             "CRACKED",

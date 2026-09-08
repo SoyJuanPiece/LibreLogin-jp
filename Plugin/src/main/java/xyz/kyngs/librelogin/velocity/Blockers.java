@@ -19,6 +19,8 @@ import xyz.kyngs.librelogin.api.configuration.Messages;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
 
+import java.util.Locale;
+
 public class Blockers {
 
     private final AuthorizationProvider<Player> authorizationProvider;
@@ -41,10 +43,10 @@ public class Blockers {
         if (authorizationProvider.isAuthorized(player) && !authorizationProvider.isAwaiting2FA(player))
             return;
 
-        var command = event.getCommand().split(" ")[0];
+        var command = event.getCommand().split(" ")[0].toLowerCase(Locale.ROOT);
 
         for (String allowed : configuration.get(ConfigurationKeys.ALLOWED_COMMANDS_WHILE_UNAUTHORIZED)) {
-            if (command.equals(allowed)) return;
+            if (command.equals(allowed.toLowerCase(Locale.ROOT))) return;
         }
 
         event.setResult(CommandExecuteEvent.CommandResult.denied());

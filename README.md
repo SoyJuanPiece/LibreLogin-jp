@@ -30,6 +30,7 @@ alt="Contributors listed"></img>
 - Automatic data migration for premium players
 - Migration of a player's data by using one command
 - Geyser (Bedrock) support using [Floodgate](https://github.com/kyngs/LibreLogin/wiki/Floodgate)
+- Backend lockdown while unauthenticated (movement/interactions blocked + optional blindness effect on Paper)
 
 ## Considerations
 
