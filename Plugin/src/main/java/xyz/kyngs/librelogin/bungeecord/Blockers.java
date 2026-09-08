@@ -16,6 +16,8 @@ import net.md_5.bungee.event.EventPriority;
 import xyz.kyngs.librelogin.api.authorization.AuthorizationProvider;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
 
+import java.util.Locale;
+
 import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.ALLOWED_COMMANDS_WHILE_UNAUTHORIZED;
 import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.LIMBO;
 
@@ -51,10 +53,10 @@ public class Blockers implements Listener {
         if (authorizationProvider.isAuthorized(player) && !authorizationProvider.isAwaiting2FA(player))
             return;
 
-        var command = event.getMessage().substring(1).split(" ")[0];
+        var command = event.getMessage().substring(1).split(" ")[0].toLowerCase(Locale.ROOT);
 
         for (String allowed : configuration.get(ALLOWED_COMMANDS_WHILE_UNAUTHORIZED)) {
-            if (command.equals(allowed)) return;
+            if (command.equals(allowed.toLowerCase(Locale.ROOT))) return;
         }
 
         event.setCancelled(true);
