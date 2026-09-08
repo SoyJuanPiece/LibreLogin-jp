@@ -16,6 +16,7 @@ import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -32,6 +33,7 @@ import xyz.kyngs.librelogin.common.SLF4JLogger;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
 import xyz.kyngs.librelogin.common.image.protocolize.ProtocolizeImageProjector;
+import xyz.kyngs.librelogin.common.networking.LibreLoginMessenger;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 import xyz.kyngs.librelogin.velocity.integration.VelocityNanoLimboIntegration;
 
@@ -107,17 +109,22 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
                 player.disconnect(getMessages().getMessage("kick-no-lobby"));
                 return;
             }
+            var data = LibreLoginMessenger.serializeAuthMessage(user.getUuid());
             player
                     .createConnectionRequest(
                             lobby
                     )
                     .connect()
                     .whenComplete((result, throwable) -> {
+                        if (throwable != null || !result.isSuccessful()) {
+                            player.disconnect(Component.text("Unable to connect"));
+                            return;
+                        }
                         if (player.getCurrentServer().isEmpty()) return;
                         if (player.getCurrentServer().get().getServerInfo().getName().equals(result.getAttemptedConnection().getServerInfo().getName()))
                             return;
-                        if (throwable != null || !result.isSuccessful())
-                            player.disconnect(Component.text("Unable to connect"));
+                        var identifier = MinecraftChannelIdentifier.from(LibreLoginMessenger.getChannelName());
+                        player.sendPluginMessage(identifier, data);
                     });
         } catch (EventCancelledException ignored) {}
     }

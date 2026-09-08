@@ -31,6 +31,7 @@ import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
 import xyz.kyngs.librelogin.common.image.protocolize.ProtocolizeImageProjector;
+import xyz.kyngs.librelogin.common.networking.LibreLoginMessenger;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 
 import java.io.File;
@@ -130,7 +131,9 @@ public class BungeeCordLibreLogin extends AuthenticLibreLogin<ProxiedPlayer, Ser
             var server = getServerHandler().chooseLobbyServer(user, player, true, false);
 
             if (server != null) {
+                var data = LibreLoginMessenger.serializeAuthMessage(user.getUuid());
                 player.connect(server);
+                server.sendData(LibreLoginMessenger.getChannelName(), data);
             } else player.disconnect(serializer.serialize(getMessages().getMessage("kick-no-lobby")));
         } catch (EventCancelledException ignored) {}
     }
@@ -157,7 +160,7 @@ public class BungeeCordLibreLogin extends AuthenticLibreLogin<ProxiedPlayer, Ser
         if (pluginPresent("Protocolize")) {
             var projector = new ProtocolizeImageProjector<>(this);
             if (!projector.compatible()) {
-                getLogger().warn("Detected protocolize, however with incompatible version (2.2.2), please upgrade or downgrade.");
+                getLogger().warn("Detected Protocolize, however with incompatible version (2.2.2), please upgrade or downgrade.");
                 return null;
             }
             getLogger().info("Detected Protocolize, enabling 2FA...");

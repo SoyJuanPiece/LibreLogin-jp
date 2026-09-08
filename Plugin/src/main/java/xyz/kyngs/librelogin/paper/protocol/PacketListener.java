@@ -10,6 +10,8 @@ import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
+import xyz.kyngs.librelogin.common.networking.LibreLoginMessenger;
 import xyz.kyngs.librelogin.paper.PaperListeners;
 
 public class PacketListener extends PacketListenerAbstract {
@@ -23,6 +25,15 @@ public class PacketListener extends PacketListenerAbstract {
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
         if (event.isCancelled()) return;
+
+        if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
+            var wrapper = new WrapperPlayClientPluginMessage(event);
+            if (LibreLoginMessenger.isAuthChannel(wrapper.getChannelName())) {
+                delegate.onAuthMessage(event, wrapper.getData());
+            }
+            return;
+        }
+
         if (event.getPacketType() != PacketType.Login.Client.LOGIN_START && event.getPacketType() != PacketType.Login.Client.ENCRYPTION_RESPONSE)
             return;
 

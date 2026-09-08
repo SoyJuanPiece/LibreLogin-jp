@@ -37,6 +37,7 @@ import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.config.MessageKeys;
 import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
+import xyz.kyngs.librelogin.common.networking.LibreLoginMessenger;
 import xyz.kyngs.librelogin.paper.protocol.ClientPublicKey;
 import xyz.kyngs.librelogin.paper.protocol.EncryptionUtil;
 import xyz.kyngs.librelogin.paper.protocol.ProtocolUtil;
@@ -458,5 +459,13 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
                  | IllegalBlockSizeException | BadPaddingException signatureEx) {
             return false;
         }
+    }
+
+    public void onAuthMessage(PacketReceiveEvent event, byte[] data) {
+        var uuid = LibreLoginMessenger.deserializeAuthMessage(data);
+        var player = Bukkit.getPlayer(uuid);
+        if (player == null) return;
+        player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
+        plugin.getLogger().info("Received auth notification for player " + uuid + " on hub");
     }
 }
