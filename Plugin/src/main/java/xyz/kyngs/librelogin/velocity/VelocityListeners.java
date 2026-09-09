@@ -154,7 +154,7 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             event.getPlayer().disconnect(plugin.getMessages().getMessage("kick-no-" + (server.key() ? "lobby" : "limbo")));
             event.setInitialServer(null);
         } else {
-            event.setInitialServer(server.key() ? server.value() : null);
+            event.setInitialServer(server.value());
         }
     }
 

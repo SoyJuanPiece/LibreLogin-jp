@@ -160,14 +160,19 @@ public class AuthenticServerHandler<P, S> implements ServerHandler<P, S> {
 
         if (event.getServer() != null) return event.getServer();
 
-        return limboServers.stream()
-                .filter(server -> {
-                    var ping = getLatestPing(server);
+        var server = limboServers.stream()
+                .filter(s -> {
+                    var ping = getLatestPing(s);
 
-                    return ping != null && ping.maxPlayers() > plugin.getPlatformHandle().getConnectedPlayers(server);
+                    return ping != null && ping.maxPlayers() > plugin.getPlatformHandle().getConnectedPlayers(s);
                 })
                 .min(Comparator.comparingInt(o -> plugin.getPlatformHandle().getConnectedPlayers(o)))
                 .orElse(null);
+
+        if (server == null) {
+            return chooseLobbyServer(user, player, false, false);
+        }
+        return server;
     }
 
     @Override

@@ -62,12 +62,7 @@ public class VelocityPlatformHandle implements PlatformHandle<Player, Registered
         Optional<RegisteredServer> serverOptional = plugin.getServer().getServer(name);
         if (serverOptional.isPresent())
             return serverOptional.get();
-        if (limbo) {
-            var address = new java.net.InetSocketAddress("127.0.0.1", 25565 + name.hashCode() & 0x7FFF);
-            var serverInfo = new com.velocitypowered.api.proxy.server.ServerInfo(name, address);
-            return plugin.getServer().registerServer(serverInfo);
-        }
-        if (plugin.getLimboIntegration() != null)
+        if (limbo && plugin.getLimboIntegration() != null)
             return plugin.getLimboIntegration().createLimbo(name);
         return null;
     }
