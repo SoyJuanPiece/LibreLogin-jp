@@ -77,6 +77,15 @@ public class AuthenticServerHandler<P, S> implements ServerHandler<P, S> {
             }
         });
 
+        if (lobbyServers.isEmpty()) {
+            for (var server : handle.getServers()) {
+                if (!limboServers.contains(server)) {
+                    registerLobbyServer(server, "root");
+                    plugin.getLogger().debug("Auto-registered lobby server: " + handle.getServerName(server));
+                }
+            }
+        }
+
         plugin.getLogger().debug("List of registered servers: ");
 
 
