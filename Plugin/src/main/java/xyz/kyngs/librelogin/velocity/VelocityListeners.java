@@ -14,9 +14,11 @@ import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
+import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.util.GameProfile;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -27,6 +29,7 @@ import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -152,6 +155,21 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             event.setInitialServer(null);
         } else {
             event.setInitialServer(server.key() ? server.value() : null);
+        }
+    }
+
+    @Subscribe(order = PostOrder.NORMAL)
+    public void onServerPreConnect(ServerPreConnectEvent event) {
+        var player = event.getPlayer();
+        if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
+            event.setResult(ServerPreConnectEvent.ServerResult.denied());
+            return;
+        }
+        var target = event.getOriginalServer();
+        var serverInfo = target.getServerInfo();
+        var limboServers = plugin.getConfiguration().get(ConfigurationKeys.LIMBO);
+        if (limboServers.contains(serverInfo.getName())) {
+            event.setResult(ServerPreConnectEvent.ServerResult.denied());
         }
     }
 

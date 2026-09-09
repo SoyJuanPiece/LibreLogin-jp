@@ -19,7 +19,9 @@ import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import static net.md_5.bungee.event.EventPriority.HIGHEST;
 import static net.md_5.bungee.event.EventPriority.LOW;
@@ -111,7 +113,7 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin,
         }
     }
 
-    @EventHandler(priority = HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void chooseServer(ServerConnectEvent event) {
         if (!event.getReason().equals(ServerConnectEvent.Reason.JOIN_PROXY)) return;
 
@@ -121,6 +123,15 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin,
             event.getPlayer().disconnect(plugin.getSerializer().serialize(plugin.getMessages().getMessage("kick-no-" + (server.key() ? "lobby" : "limbo"))));
         } else {
             event.setTarget(server.key() ? server.value() : null);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onServerConnect(ServerConnectEvent event) {
+        if (event.getReason().equals(ServerConnectEvent.Reason.JOIN_PROXY)) return;
+        var player = event.getPlayer();
+        if (!plugin.getAuthorizationProvider().isAuthorized(player)) {
+            event.setCancelled(true);
         }
     }
 
