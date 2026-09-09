@@ -68,6 +68,7 @@ repositories {
     maven { url = uri("https://jitpack.io/") }
     maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url = uri("https://maven.elytrium.net/repo/") }
 }
 
 blossom {
@@ -197,6 +198,8 @@ dependencies {
     implementation("xyz.kyngs.libby:libby-velocity:1.6.0")
     implementation("xyz.kyngs.libby:libby-bungee:1.6.0")
     implementation("xyz.kyngs.libby:libby-paper:1.6.0")
+
+    //LimboAPI - loaded via reflection at runtime when plugin is present
 
     //NanoLimboPlugin
     compileOnly("com.github.bivashy.NanoLimboPlugin:api:1.0.8")
