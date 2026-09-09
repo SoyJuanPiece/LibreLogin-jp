@@ -120,7 +120,7 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin,
         if (server.value() == null) {
             event.getPlayer().disconnect(plugin.getSerializer().serialize(plugin.getMessages().getMessage("kick-no-" + (server.key() ? "lobby" : "limbo"))));
         } else {
-            event.setTarget(server.value());
+            event.setTarget(server.key() ? server.value() : null);
         }
     }
 

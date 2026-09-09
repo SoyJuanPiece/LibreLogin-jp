@@ -420,11 +420,4 @@ public class ConfigurationKeys {
             "!!THIS OPTION IS IRRELEVANT WHEN USING PAPER!! Defines port(s) that limbo server can be bounded to.",
             ConfigurateHelper::getString
     );
-
-    public static final ConfigurationKey<Boolean> LIMBO_API_ENABLED = new ConfigurationKey<>(
-            "limbo-api.enabled",
-            false,
-            "Use LimboAPI for internal limbo server support. Requires LimboAPI plugin on Velocity proxy.",
-            ConfigurateHelper::getBoolean
-    );
 }

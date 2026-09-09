@@ -35,7 +35,6 @@ import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
 import xyz.kyngs.librelogin.common.image.protocolize.ProtocolizeImageProjector;
 import xyz.kyngs.librelogin.common.networking.LibreLoginMessenger;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
-import xyz.kyngs.librelogin.velocity.integration.LimboAPILimboIntegration;
 import xyz.kyngs.librelogin.velocity.integration.VelocityNanoLimboIntegration;
 
 import java.io.File;
@@ -64,13 +63,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
     private VelocityRedisBungeeIntegration redisBungee;
     @Nullable
     private LimboIntegration<RegisteredServer> limboIntegration;
-    @Nullable
-    private LimboAPILimboIntegration limboAPILimboIntegration;
-    private boolean limboAPIInitialized = false;
-
-    public LimboAPILimboIntegration getLimboAPILimboIntegration() {
-        return limboAPILimboIntegration;
-    }
 
     public VelocityLibreLogin(VelocityBootstrap bootstrap) {
         this.bootstrap = bootstrap;
@@ -118,38 +110,29 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
                 return;
             }
             if (isLimboServer(lobby)) {
-                spawnPlayerInLimbo(player, lobby);
-            } else {
-                var data = LibreLoginMessenger.serializeAuthMessage(user.getUuid());
-                player
-                        .createConnectionRequest(lobby)
-                        .connect()
-                        .whenComplete((result, throwable) -> {
-                            if (throwable != null || !result.isSuccessful()) {
-                                player.disconnect(Component.text("Unable to connect"));
-                                return;
-                            }
-                            if (player.getCurrentServer().isEmpty()) return;
-                            if (player.getCurrentServer().get().getServerInfo().getName().equals(result.getAttemptedConnection().getServerInfo().getName()))
-                                return;
-                            var identifier = MinecraftChannelIdentifier.from(LibreLoginMessenger.getChannelName());
-                            player.sendPluginMessage(identifier, data);
-                        });
+                return;
             }
+            var data = LibreLoginMessenger.serializeAuthMessage(user.getUuid());
+            player
+                    .createConnectionRequest(lobby)
+                    .connect()
+                    .whenComplete((result, throwable) -> {
+                        if (throwable != null || !result.isSuccessful()) {
+                            player.disconnect(Component.text("Unable to connect"));
+                            return;
+                        }
+                        if (player.getCurrentServer().isEmpty()) return;
+                        if (player.getCurrentServer().get().getServerInfo().getName().equals(result.getAttemptedConnection().getServerInfo().getName()))
+                            return;
+                        var identifier = MinecraftChannelIdentifier.from(LibreLoginMessenger.getChannelName());
+                        player.sendPluginMessage(identifier, data);
+                    });
         } catch (EventCancelledException ignored) {}
     }
 
     private boolean isLimboServer(RegisteredServer server) {
         var limboServers = getConfiguration().get(ConfigurationKeys.LIMBO);
         return limboServers.contains(server.getServerInfo().getName());
-    }
-
-    private void spawnPlayerInLimbo(Player player, RegisteredServer limboServer) {
-        if (limboAPILimboIntegration == null) {
-            player.disconnect(Component.text("LimboAPI is not available"));
-            return;
-        }
-        limboAPILimboIntegration.spawnPlayer(player, limboServer.getServerInfo().getName());
     }
 
     @Override
@@ -213,24 +196,8 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
         if (pluginPresent("redisbungee")) {
             redisBungee = new VelocityRedisBungeeIntegration();
         }
-        if (getConfiguration().get(ConfigurationKeys.LIMBO_API_ENABLED) && pluginPresent("limboapi")) {
-            initializeLimboAPI();
-        }
         super.enable();
         getLogger().info("LibreLogin version " + getVersion() + " enabled!");
-    }
-
-    private void initializeLimboAPI() {
-        var pluginOpt = server.getPluginManager().getPlugin("limboapi");
-        if (pluginOpt.isPresent()) {
-            var plugin = pluginOpt.get();
-            var instance = plugin.getInstance().orElse(null);
-            if (instance != null) {
-                limboAPILimboIntegration = new LimboAPILimboIntegration(server, getLogger(), instance);
-                limboAPIInitialized = true;
-                getLogger().info("LimboAPI integration initialized successfully");
-            }
-        }
     }
 
     @Override
@@ -280,9 +247,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
     @Nullable
     @Override
     public LimboIntegration<RegisteredServer> getLimboIntegration() {
-        if (limboAPILimboIntegration != null) {
-            return limboAPILimboIntegration;
-        }
         if (pluginPresent("nanolimbovelocity") && limboIntegration == null) {
             limboIntegration = new VelocityNanoLimboIntegration(server,
                     getConfiguration().get(ConfigurationKeys.LIMBO_PORT_RANGE));

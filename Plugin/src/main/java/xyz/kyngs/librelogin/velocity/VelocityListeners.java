@@ -14,11 +14,9 @@ import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
-import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.util.GameProfile;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -27,12 +25,10 @@ import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
-import xyz.kyngs.librelogin.velocity.integration.LimboAPILimboIntegration;
 
 import java.lang.reflect.Field;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 
 public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Player, RegisteredServer> {
 
@@ -50,7 +46,6 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
                 INITIAL_MINECRAFT_CONNECTION.setAccessible(true);
             }
 
-            // Since Velocity 3.1.0
             Class<?> loginInboundConnection;
             try {
                 loginInboundConnection = Class.forName("com.velocitypowered.proxy.connection.client.LoginInboundConnection");
@@ -111,7 +106,6 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
         if (!event.getResult().isAllowed())
             return;
 
-        // If floodgate is present, attempt to extract the floodgate player from the connection channel.
         if (plugin.floodgateEnabled()) {
             Channel channel;
             InboundConnection connection = event.getConnection();
@@ -124,7 +118,7 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
                 channel = (Channel) CHANNEL.get(mcConnection);
 
                 if (channel.attr(FLOODGATE_ATTR).get() != null) {
-                    return; // Player is coming from Floodgate
+                    return;
                 }
             } catch (Exception e) {
                 plugin.getLogger().warn("Failed to check if player is coming from Floodgate.");
@@ -149,20 +143,6 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
 
     }
 
-    @Subscribe(order = PostOrder.NORMAL)
-    public void onServerPreConnect(ServerPreConnectEvent event) {
-        var player = event.getPlayer();
-        var target = event.getOriginalServer();
-        var plugin = (VelocityLibreLogin) this.plugin;
-
-        var limboAPI = plugin.getLimboAPILimboIntegration();
-        if (limboAPI != null && limboAPI.hasLimbo(target.getServerInfo().getName())) {
-            limboAPI.spawnPlayer(player, target.getServerInfo().getName());
-            event.setResult(ServerPreConnectEvent.ServerResult.denied());
-            return;
-        }
-    }
-
     @Subscribe(order = PostOrder.LAST)
     public void chooseServer(PlayerChooseInitialServerEvent event) {
         var server = chooseServer(event.getPlayer(), null, null);
@@ -171,9 +151,8 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             event.getPlayer().disconnect(plugin.getMessages().getMessage("kick-no-" + (server.key() ? "lobby" : "limbo")));
             event.setInitialServer(null);
         } else {
-            event.setInitialServer(server.value());
+            event.setInitialServer(server.key() ? server.value() : null);
         }
-
     }
 
     @Subscribe(order = PostOrder.EARLY)
@@ -200,6 +179,5 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             }
         }
     }
-
 
 }
