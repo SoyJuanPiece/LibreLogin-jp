@@ -109,9 +109,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
                 player.disconnect(getMessages().getMessage("kick-no-lobby"));
                 return;
             }
-            if (isLimboServer(lobby)) {
-                return;
-            }
             var data = LibreLoginMessenger.serializeAuthMessage(user.getUuid());
             player
                     .createConnectionRequest(lobby)
@@ -128,11 +125,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
                         player.sendPluginMessage(identifier, data);
                     });
         } catch (EventCancelledException ignored) {}
-    }
-
-    private boolean isLimboServer(RegisteredServer server) {
-        var limboServers = getConfiguration().get(ConfigurationKeys.LIMBO);
-        return limboServers.contains(server.getServerInfo().getName());
     }
 
     @Override
